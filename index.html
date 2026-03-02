@@ -1,37 +1,423 @@
-// Ваши данные для подключения к Supabase
-const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // ваш ключ
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Приглашение на свадьбу Ильи и Алины</title>
+  <link rel="stylesheet" href="https://static.tildacdn.com/css/tilda-grid-3.0.min.css" type="text/css" media="all">
+  <link rel="stylesheet" href="https://static.tildacdn.com/css/tilda-animation-2.0.min.css" type="text/css" media="all">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin:0; background:#fff; font-family: 'Montserrat', sans-serif; color:#000; }
+    .t396__artboard { position:relative; width:100%; height:100vh; overflow:hidden; }
+    .tn-elem { position:absolute; }
+    /* Прелоадер */
+    .uc-preloader { position:fixed; left:0; top:0; width:100%; height:100%; z-index:80; backdrop-filter:blur(15px); transition: opacity 1.75s ease-in-out 0.75s; pointer-events:auto; }
+    .hide-preloader { opacity:0; pointer-events:none; }
+    /* Кнопки музыки */
+    .playbgmusic, .stopbgmusic { position:fixed; bottom:20px; right:20px; cursor:pointer; z-index:15; }
+    /* Таймер и прочее – стили из примера + ваши */
+    .timer-block { display:flex; justify-content:center; gap:1rem; margin:2rem 0; }
+    .timer-item { background:rgba(0,0,0,0.05); padding:1rem; border-radius:10px; min-width:70px; }
+  </style>
+</head>
+<body class="t-body">
+  <!-- Прелоадер (заставка) -->
+  <div id="rec1031814156" class="r t-rec uc-preloader" style="--zoom:1.125;" data-animationappear="off">
+    <div class="t396">
+      <div class="t396__artboard" style="height:100vh;">
+        <div class="t396__carrier" style="background:#a79889;"></div>
+        <div class="t396__filter" style="backdrop-filter:blur(15px);"></div>
+        <!-- Анимированный круг -->
+        <div class="tn-elem" style="top:calc(50% - 50px); left:calc(50% - 50px); width:100px; height:100px; border:2px solid #fff; border-radius:50%;"></div>
+        <div class="tn-elem" style="top:calc(50% - 50px); left:calc(50% - 50px); width:100px; height:100px; background:#fff; border-radius:50%; opacity:0.5;"></div>
+        <div class="tn-elem" style="top:calc(50% - 28px); left:calc(50% - 28px); width:56px;">
+          <img src="https://static.tildacdn.com/tild3332-3461-4730-a464-393066656166/IMG_1308.PNG" style="width:56px;" alt="">
+        </div>
+        <div class="tn-elem" style="top:220px; left:calc(50% - 280px); width:560px; text-align:center; color:#fff; font-size:20px;">
+          Нажмите, чтобы открыть приглашение
+        </div>
+      </div>
+    </div>
+  </div>
 
-// Функция, которая вызывается после успешной отправки формы в Tilda
-function mySuccessFunction(form) {
-    // ... (код для сбора данных из формы в объект `obj`) ...
+  <!-- Основной контент (скрыт до клика на прелоадер) -->
+  <div id="allrecords" class="t-records" style="display:none;">
+    <!-- Блок с фоном и именами -->
+    <div id="rec1027560251" class="r t-rec" style="height:100vh;">
+      <div class="t396">
+        <div class="t396__artboard" style="height:100vh; background:#fff;">
+          <!-- Видео или фото пары – ЗАМЕНИТЕ ССЫЛКУ -->
+          <div class="tn-elem" style="top:calc(50% - 333px); left:calc(50% - 187px); width:375px; height:667px;">
+            <video autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;">
+              <source src="https://ваш-хостинг.ru/video/para.MOV" type="video/mp4">
+            </video>
+          </div>
+          <!-- Имена -->
+          <div class="tn-elem" style="top:calc(50% + 50px); left:calc(50% - 97px); width:195px;">
+            <img src="https://static.tildacdn.com/tild3963-3630-4233-b436-313738333533/noroot.png" style="width:100%;" alt="Илья и Алина">
+          </div>
+          <!-- Таймер (Megatimer) – нужно создать свой на megatimer.ru и вставить код, пока заглушка -->
+          <div class="tn-elem" style="top:calc(50% + 130px); left:calc(50% - 152px); width:305px;">
+            <div class="timer-block">
+              <div class="timer-item"><span id="days">00</span> дн</div>
+              <div class="timer-item"><span id="hours">00</span> ч</div>
+              <div class="timer-item"><span id="minutes">00</span> мин</div>
+              <div class="timer-item"><span id="seconds">00</span> сек</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    // Подготавливаем данные для Supabase, сопоставляя поля
-    const formDataForSupabase = {
-        FIO: obj['Ваше имя и фамилия'],
-        FIOsputnik: obj['Имя и Фамилия вашего спутника/спутницы'] || null,
-        attending: (obj['Планируете ли Вы присутствовать на свадьбе?'] === 'Обязательно приду' || 
-                   obj['Планируете ли Вы присутствовать на свадьбе?'] === 'Буду со второй половинкой') ? 'Да' : 'Нет',
-        guests_count: 1 + (obj['Имя и Фамилия вашего спутника/спутницы'] ? 1 : 0) + (obj['Сколько детей будет с Вами?'] || 0), // Примерный расчет
-        alcohol: obj['Уточните Ваши предпочтения в напитках, выбрав один или несколько вариантов'] || null, // Здесь нужно будет обработать массив чекбоксов
-        alergic: obj['Есть ли у Вас аллергия?'] || null,
-        favtrack: obj['Оставьте свой любимый музыкальный трек:'] || null
-    };
+    <!-- Блок с датой и приветствием -->
+    <div id="rec1027560261" class="r t-rec" style="padding:60px 0; background:#fff;">
+      <div class="t396">
+        <div class="t396__artboard" style="height:1240px;">
+          <!-- Текст приглашения -->
+          <div class="tn-elem" style="top:112px; left:calc(50% - 280px); width:560px;">
+            <p style="font-size:18px; line-height:1.55; text-align:center;">
+              Один день в этом году станет для нас особенно важным – день рождения нашей семьи. 
+              Мы с большим удовольствием приглашаем вас, своих друзей и родных, на свадебное торжество, которое состоится:
+            </p>
+          </div>
+          <!-- Дата 20 августа 2026 -->
+          <div class="tn-elem" style="top:245px; left:calc(50% - 184px); width:368px;">
+            <img src="https://static.tildacdn.com/tild3334-3266-4631-a563-386230663333/31__2025_.svg" style="width:100%;" alt="20 августа 2026">
+          </div>
+          <!-- Календарь (числа) – можно оставить как в примере, но дату поправить в тексте -->
+          <!-- ... (остальные элементы календаря) ... -->
 
-    // Отправляем данные в Supabase
-    supabase
-        .from('guests')
-        .insert([formDataForSupabase])
-        .then(response => {
-            if (response.error) {
-                console.error('Ошибка отправки в Supabase:', response.error);
-                // Можно добавить уведомление для администратора
-            } else {
-                console.log('Данные успешно сохранены в Supabase');
-            }
+          <!-- Место проведения -->
+          <div class="tn-elem" style="top:723px; left:calc(50% - 388px); width:776px;">
+            <img src="https://static.tildacdn.com/tild3737-3531-4837-b832-343135613733/_.png" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:755px; left:calc(50% - 300px); width:150px; height:1px; background:#000;"></div>
+          <div class="tn-elem" style="top:755px; left:calc(50% + 150px); width:150px; height:1px; background:#000;"></div>
+          <div class="tn-elem" style="top:810px; left:calc(50% - 280px); width:560px; text-align:center; font-size:18px;">
+            Шатёр Moon’e<br>по адресу: Раздольная, 22, г.Барнаул
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Блок с расписанием -->
+    <div id="rec1027560276" class="r t-rec" style="padding:60px 0; background:#fff;">
+      <div class="t396">
+        <div class="t396__artboard" style="height:340px;">
+          <!-- Иконки и время – замените текст при необходимости -->
+          <div class="tn-elem" style="top:108px; left:calc(50% - 447px); width:144px;">
+            <img src="https://static.tildacdn.com/tild6434-3230-4134-b834-373461636234/noroot.png" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:275px; left:calc(50% - 481px); width:221px; font-size:18px; text-align:center;">
+            14.30<br>Сбор гостей, фуршет
+          </div>
+
+          <div class="tn-elem" style="top:108px; left:calc(50% - 128px); width:144px;">
+            <img src="https://static.tildacdn.com/tild3932-6539-4338-b434-306161613630/noroot.png" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:275px; left:calc(50% - 179px); width:248px; font-size:18px; text-align:center;">
+            15.00<br>Регистрация
+          </div>
+
+          <div class="tn-elem" style="top:108px; left:calc(50% + 116px); width:144px;">
+            <img src="https://static.tildacdn.com/tild3635-3238-4332-b562-393865373237/Ellipse_1_copy.png" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:275px; left:calc(50% + 64px); width:248px; font-size:18px; text-align:center;">
+            16.00<br>Банкет
+          </div>
+
+          <div class="tn-elem" style="top:108px; left:calc(50% + 360px); width:144px;">
+            <img src="https://static.tildacdn.com/tild3062-6537-4766-b666-366236663637/Layer_9.png" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:275px; left:calc(50% + 308px); width:248px; font-size:18px; text-align:center;">
+            22.00<br>Окончание банкета
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Блок с информацией (координатор, подарки, цветы) -->
+    <div id="rec1027560296" class="r t-rec" style="background:#fff;">
+      <!-- Фото 1 -->
+      <div class="t396">
+        <div class="t396__artboard" style="height:4210px;">
+          <div class="tn-elem" style="top:0; left:calc(50% - 189px); width:379px; height:568px; border:5px solid #000;">
+            <div class="tn-atom t-bgimg" data-original="https://drive.google.com/file/d/16e1znYaUMfdHVDFCFhTkH-xGJdz6zcMm/view?usp=sharing" style="background-size:cover;"></div>
+          </div>
+
+          <!-- Дресс-код -->
+          <div class="tn-elem" style="top:680px; left:calc(50% - 168px); width:336px;">
+            <img src="https://static.tildacdn.com/tild3965-6439-4639-b531-323036663035/-_.svg" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:761px; left:calc(50% - 280px); width:560px; font-size:18px; text-align:center;">
+            Мы будем рады видеть каждого с улыбкой на лице и в любом комфортном наряде для вас!
+          </div>
+
+          <!-- Подарки и цветы -->
+          <div class="tn-elem" style="top:933px; left:calc(50% - 194px); width:388px;">
+            <img src="https://static.tildacdn.com/tild3631-3139-4633-b536-333765633966/photo.png" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:1029px; left:calc(50% - 280px); width:560px; font-size:18px;">
+            <p><strong>Подарки</strong><br>Не ломайте голову над подарком. Нам доставит радость любая сумма в конверте!</p>
+            <p><strong>Цветы</strong><br>Если хотите подарить цветы – принесите один цветок, к вечеру мы составим общий букет. Вместо цветов приветствуются напитки для нашей домашней винотеки.</p>
+          </div>
+
+          <!-- Координатор (замените имя и номер) -->
+          <div class="tn-elem" style="top:1514px; left:calc(50% - 116px); width:233px;">
+            <img src="https://static.tildacdn.com/tild6234-3738-4236-a662-633535313832/photo.png" style="width:100%;" alt="">
+          </div>
+          <div class="tn-elem" style="top:1590px; left:calc(50% - 280px); width:560px; font-size:18px;">
+            <p><strong>Координатор</strong><br>По всем вопросам обращайтесь к нашему координатору – Анне</p>
+          </div>
+          <!-- Кнопка WhatsApp (замените номер) -->
+          <a class="tn-elem" href="https://wa.me/79630000000?text=" style="top:1707px; left:calc(50% - 100px); width:200px; height:55px; background:#000; color:#fff; display:flex; align-items:center; justify-content:center; text-decoration:none;">+7 (963) 000-00-00</a>
+
+          <!-- Telegram канал (замените ссылку) -->
+          <div class="tn-elem" style="top:1805px; left:calc(50% - 269px); width:539px; font-size:18px;">
+            Приглашаем вступить в Telegram-канал. Здесь будут фото и видео с торжества.
+          </div>
+          <a class="tn-elem" href="https://t.me/ваш_канал" style="top:1925px; left:calc(50% - 100px); width:200px; height:55px; background:#000; color:#fff; display:flex; align-items:center; justify-content:center; text-decoration:none;">вступить</a>
+
+          <!-- Фото 2 -->
+          <div class="tn-elem" style="top:2092px; left:calc(50% - 189px); width:379px; height:568px; border:5px solid #000;">
+            <div class="tn-atom t-bgimg" data-original="https://ваш-хостинг.ru/photo2.jpg" style="background-size:cover;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ФОРМА RSVP (заполняется гостями) -->
+    <div id="rec1677666237568" class="r t-rec" style="padding:60px 0; background:#fff;">
+      <div class="t396">
+        <div class="t396__artboard" style="height:auto;">
+          <div class="tn-elem" style="position:relative; width:100%; max-width:600px; margin:0 auto;">
+            <form id="rsvp-form" class="t-form">
+              <h2 style="text-align:center;">Подтверждение присутствия</h2>
+              <p style="text-align:center; margin-bottom:30px;">Пожалуйста, заполните до 1 июля</p>
+
+              <div style="margin-bottom:20px;">
+                <label>Ваше имя и фамилия *</label>
+                <input type="text" id="fio" name="fio" required style="width:100%; padding:10px; border:1px solid #000;">
+              </div>
+
+              <div style="margin-bottom:20px;">
+                <label>Планируете ли Вы присутствовать? *</label><br>
+                <label><input type="radio" name="attending" value="Да" required> Обязательно приду</label><br>
+                <label><input type="radio" name="attending" value="Да, с парой"> Буду со второй половинкой</label><br>
+                <label><input type="radio" name="attending" value="Нет"> К сожалению, не смогу</label>
+              </div>
+
+              <div style="margin-bottom:20px;">
+                <label>Имя и фамилия вашего спутника/спутницы</label>
+                <input type="text" id="fiosputnik" name="fiosputnik" style="width:100%; padding:10px; border:1px solid #000;">
+              </div>
+
+              <div style="margin-bottom:20px;">
+                <label>Будут ли с Вами дети?</label><br>
+                <label><input type="radio" name="children" value="yes"> Да</label>
+                <label><input type="radio" name="children" value="no" checked> Нет</label>
+              </div>
+
+              <div style="margin-bottom:20px;" id="children-details" style="display:none;">
+                <label>Сколько детей и их имена/возраст</label>
+                <input type="text" id="children_info" placeholder="Имена и возраст" style="width:100%; padding:10px; border:1px solid #000;">
+              </div>
+
+              <div style="margin-bottom:20px;">
+                <label>Предпочтения в напитках (можно выбрать несколько)</label><br>
+                <label><input type="checkbox" name="alcohol" value="Безалкогольные"> Безалкогольные</label><br>
+                <label><input type="checkbox" name="alcohol" value="Шампанское"> Шампанское</label><br>
+                <label><input type="checkbox" name="alcohol" value="Вино белое сухое"> Вино белое сухое</label><br>
+                <label><input type="checkbox" name="alcohol" value="Вино красное сухое"> Вино красное сухое</label><br>
+                <label><input type="checkbox" name="alcohol" value="Самогон"> Самогон</label><br>
+                <label><input type="checkbox" name="alcohol" value="Домашние настойки"> Домашние настойки</label>
+              </div>
+
+              <div style="margin-bottom:20px;">
+                <label>Есть ли у Вас аллергия?</label>
+                <input type="text" id="alergic" placeholder="Если есть, напишите какая" style="width:100%; padding:10px; border:1px solid #000;">
+              </div>
+
+              <div style="margin-bottom:20px;">
+                <label>На чём планируете добираться домой?</label>
+                <input type="text" id="transport" style="width:100%; padding:10px; border:1px solid #000;">
+              </div>
+
+              <div style="margin-bottom:20px;">
+                <label>Любимый музыкальный трек</label>
+                <input type="text" id="favtrack" placeholder="Исполнитель - Название" style="width:100%; padding:10px; border:1px solid #000;">
+              </div>
+
+              <button type="submit" id="submit-btn" style="width:300px; margin:0 auto; display:block; padding:15px; background:#000; color:#fff; border:none; cursor:pointer;">Отправить</button>
+            </form>
+            <div id="status-message" style="margin-top:20px; text-align:center;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Футер с фото -->
+    <div id="rec1027560306" class="r t-rec" style="height:100vh;">
+      <div class="t396">
+        <div class="t396__artboard" style="height:100vh; background-image:url('https://ваш-хостинг.ru/footer-photo.jpg'); background-size:cover;">
+          <div class="tn-elem" style="top:calc(50% - 60px); left:calc(50% - 117px); width:234px;">
+            <img src="https://static.tildacdn.com/tild3664-3365-4537-b963-333439616465/_.png" style="width:100%;" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Музыка (тихо, автовоспроизведение после клика) -->
+  <audio id="bg-sound" loop style="display:none;">
+    <source src="https://ваш-хостинг.ru/music.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Иконки управления музыкой (можно оставить или убрать) -->
+  <div class="playbgmusic" style="position:fixed; bottom:20px; right:20px; cursor:pointer; z-index:15;">
+    <img src="https://static.tildacdn.com/tild3537-6661-4166-b534-663433366431/noroot.png" width="50" alt="play">
+  </div>
+  <div class="stopbgmusic" style="display:none; position:fixed; bottom:20px; right:20px; cursor:pointer; z-index:15;">
+    <img src="https://static.tildacdn.com/tild6134-3738-4735-b961-656265313835/photo.png" width="50" alt="stop">
+  </div>
+
+  <!-- Подключение Supabase и скрипты -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ========== ПРЕЛОАДЕР ==========
+      const preloader = document.querySelector('.uc-preloader');
+      const content = document.getElementById('allrecords');
+      const body = document.body;
+      const audio = document.getElementById('bg-sound');
+      const playBtn = document.querySelector('.playbgmusic');
+      const stopBtn = document.querySelector('.stopbgmusic');
+
+      preloader.addEventListener('click', function() {
+        preloader.classList.add('hide-preloader');
+        content.style.display = 'block';
+        body.style.overflow = 'auto';
+        // Попытка воспроизвести музыку (после клика)
+        audio.play().catch(e => console.log('Автовоспроизведение заблокировано:', e));
+        playBtn.style.display = 'none';
+        stopBtn.style.display = 'block';
+      });
+
+      // Управление музыкой
+      playBtn.addEventListener('click', function() {
+        audio.play();
+        playBtn.style.display = 'none';
+        stopBtn.style.display = 'block';
+      });
+      stopBtn.addEventListener('click', function() {
+        audio.pause();
+        stopBtn.style.display = 'none';
+        playBtn.style.display = 'block';
+      });
+
+      // ========== ТАЙМЕР ==========
+      const weddingDate = new Date('2026-08-20T14:00:00').getTime();
+      function updateTimer() {
+        const now = new Date().getTime();
+        const dist = weddingDate - now;
+        if (dist < 0) {
+          document.getElementById('days').textContent = '00';
+          document.getElementById('hours').textContent = '00';
+          document.getElementById('minutes').textContent = '00';
+          document.getElementById('seconds').textContent = '00';
+          return;
+        }
+        const days = Math.floor(dist / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((dist % (1000 * 60)) / 1000);
+        document.getElementById('days').textContent = days.toString().padStart(2, '0');
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+      }
+      setInterval(updateTimer, 1000);
+      updateTimer();
+
+      // ========== ПОКАЗ ПОЛЯ "ДЕТИ" ПРИ ВЫБОРЕ ==========
+      const childrenRadios = document.querySelectorAll('input[name="children"]');
+      const childrenDetails = document.getElementById('children-details');
+      childrenRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          childrenDetails.style.display = this.value === 'yes' ? 'block' : 'none';
         });
+      });
 
-    // Оставляем отправку в Telegram, если нужно
-    sendMessage(textMessage);  
-}
+      // ========== SUPABASE ==========
+      const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YnJha2N1a3Boc21xb2R3dXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NjAzMjcsImV4cCI6MjA4ODAzNjMyN30.keBClSxV7XvSh2--XEhWY-VAR8oPR4BmVAuJEaNNizk';
+      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const form = document.getElementById('rsvp-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const statusDiv = document.getElementById('status-message');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправка...';
+        statusDiv.textContent = '';
+
+        // Собираем данные
+        const attending = document.querySelector('input[name="attending"]:checked')?.value || '';
+        const alcoholCheckboxes = document.querySelectorAll('input[name="alcohol"]:checked');
+        const alcoholValues = Array.from(alcoholCheckboxes).map(cb => cb.value).join(', ');
+
+        // Подсчет гостей (приблизительно)
+        let guestsCount = 1; // сам гость
+        if (document.getElementById('fiosputnik').value.trim() !== '') guestsCount++;
+        if (document.querySelector('input[name="children"]:checked')?.value === 'yes') {
+          // Можно добавить число детей, но пока условно +1
+          guestsCount++;
+        }
+
+        const formData = {
+          FIO: document.getElementById('fio').value.trim(),
+          FIOsputnik: document.getElementById('fiosputnik').value.trim() || null,
+          attending: attending.startsWith('Да') ? 'Да' : (attending === 'Нет' ? 'Нет' : ''),
+          guests_count: guestsCount,
+          alcohol: alcoholValues || null,
+          alergic: document.getElementById('alergic').value.trim() || null,
+          favtrack: document.getElementById('favtrack').value.trim() || null
+        };
+
+        // Дополнительные поля, если захотите сохранять их, нужно расширить таблицу в Supabase
+        // Сейчас сохраняем только основные
+
+        console.log('Отправка в Supabase:', formData);
+
+        try {
+          const { error } = await supabase
+            .from('guests')
+            .insert([formData]);
+
+          if (error) {
+            console.error('Ошибка Supabase:', error);
+            statusDiv.style.color = '#c62828';
+            statusDiv.textContent = 'Ошибка при отправке. Попробуйте позже.';
+          } else {
+            statusDiv.style.color = '#2e7d32';
+            statusDiv.textContent = 'Спасибо! Ваш ответ отправлен 🎉';
+            form.reset();
+            childrenDetails.style.display = 'none';
+          }
+        } catch (err) {
+          console.error('Ошибка:', err);
+          statusDiv.style.color = '#c62828';
+          statusDiv.textContent = 'Произошла ошибка. Попробуйте ещё раз.';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Отправить';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
