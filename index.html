@@ -3,210 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Диагностика Supabase</title>
+  <title>Наш свадебный день 💍</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+      color: #034078;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
       text-align: center;
+      padding: 2rem;
     }
-    .diagnostic {
-      background: #f0f0f0;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 20px 0;
-      text-align: left;
+
+    h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+    p { font-size: 1.2rem; margin-bottom: 2rem; }
+    
+    .timer { 
+      font-size: 2rem; 
+      margin-bottom: 2rem; 
+      display: flex; 
+      gap: 1rem; 
+      justify-content: center; 
+      flex-wrap: wrap;
     }
-    pre {
-      background: #333;
-      color: #fff;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+    
+    .timer div { 
+      background: rgba(255, 255, 255, 0.3); 
+      padding: 1rem; 
+      border-radius: 10px; 
+      min-width: 70px; 
+      backdrop-filter: blur(5px);
     }
-    button {
-      padding: 10px 20px;
-      margin: 5px;
-      cursor: pointer;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
+
+    form {
+      background: rgba(255, 255, 255, 0.7);
+      padding: 2rem;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 500px;
+      width: 100%;
+      margin-bottom: 2rem;
+      box-sizing: border-box;
+      backdrop-filter: blur(5px);
     }
-    button:hover {
-      background: #45a049;
-    }
-    .success { color: #4CAF50; }
-    .error { color: #f44336; }
-    input, select {
-      padding: 8px;
-      margin: 5px 0;
+
+    input, select, button {
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
       width: 100%;
       box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
     }
+
+    button {
+      background-color: #0288d1;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover { background-color: #026aa7; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+    footer { font-size: 0.9rem; color: #555; margin-top: 2rem; }
+
+    @keyframes fadeIn { 
+      0% { opacity: 0; transform: translateY(20px); } 
+      100% { opacity: 1; transform: translateY(0); } 
+    }
+    
+    h1, p, .timer, form { 
+      animation: fadeIn 1s ease forwards; 
+    }
+
+    #status-message {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+      max-width: 500px;
+      width: 100%;
+      font-weight: bold;
+    }
+
+    .success { background-color: #e8f5e8; color: #2e7d32; }
+    .error { background-color: #ffebee; color: #c62828; }
   </style>
 </head>
 <body>
-  <h1>Диагностика Supabase</h1>
-  
-  <div class="diagnostic">
-    <h3>Проверка подключения:</h3>
-    <button onclick="runDiagnostic.testConnection()">1. Проверить соединение</button>
-    <button onclick="runDiagnostic.checkStructure()">2. Проверить структуру таблицы</button>
-    <button onclick="runDiagnostic.testInsert()">3. Тестовый INSERT</button>
+
+  <h1>Наша свадьба 💍</h1>
+  <p>Дорогие гости! Мы рады пригласить вас разделить этот особенный день с нами!</p>
+
+  <div class="timer">
+    <div><span id="days">00</span> Дней</div>
+    <div><span id="hours">00</span> Часов</div>
+    <div><span id="minutes">00</span> Минут</div>
+    <div><span id="seconds">00</span> Секунд</div>
   </div>
 
-  <div id="result"></div>
-
-  <hr>
-
-  <h2>Рабочая форма</h2>
-  <form id="simple-form">
-    <input type="text" id="fio" placeholder="ФИО *" required><br>
-    <input type="text" id="sputnik" placeholder="ФИО спутника"><br>
+  <form id="rsvp-form">
+    <h2 style="margin:0; color:#034078;">Форма подтверждения</h2>
+    
+    <input type="text" id="fio" placeholder="Ваше ФИО *" required>
+    
+    <input type="text" id="fiosputnik" placeholder="ФИО спутника/спутницы">
+    
     <select id="attending" required>
-      <option value="">Придете? *</option>
-      <option value="Да">Да</option>
-      <option value="Нет">Нет</option>
-    </select><br>
-    <input type="number" id="guests" placeholder="Количество гостей" value="1" min="1"><br>
-    <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю"><br>
-    <input type="text" id="allergy" placeholder="Аллергии"><br>
-    <input type="text" id="track" placeholder="Любимый трек"><br>
-    <button type="submit">Отправить</button>
+      <option value="">Сможете ли вы присутствовать? *</option>
+      <option value="Да">Да, с радостью приду</option>
+      <option value="Нет">Нет, к сожалению не смогу</option>
+    </select>
+    
+    <input type="number" id="guests_count" placeholder="Количество гостей (включая вас) *" min="1" value="1" required>
+    
+    <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю">
+    
+    <!-- ВАЖНО: alergic с одной "л" как в базе данных -->
+    <input type="text" id="alergic" placeholder="Аллергии или особенности питания">
+    
+    <input type="text" id="favtrack" placeholder="Любимая песня">
+    
+    <button type="submit" id="submit-btn">Отправить подтверждение</button>
   </form>
 
-  <div id="form-result"></div>
+  <div id="status-message"></div>
+
+  <footer>© 2026 Наш свадебный сайт</footer>
 
   <script>
-    // Создаем глобальный объект для диагностики
-    window.runDiagnostic = {};
-    
-    const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YnJha2N1a3Boc21xb2R3dXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NjAzMjcsImV4cCI6MjA4ODAzNjMyN30.keBClSxV7XvSh2--XEhWY-VAR8oPR4BmVAuJEaNNizk';
-    
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const resultDiv = document.getElementById('result');
+    document.addEventListener('DOMContentLoaded', function() {
+      
+      // ================ ТАЙМЕР ================
+      const weddingDate = new Date("2026-08-20T14:00:00").getTime();
+      
+      function updateTimer() {
+        const now = new Date().getTime();
+        const distance = weddingDate - now;
 
-    function showResult(text, isError = false) {
-      resultDiv.innerHTML = `<pre class="${isError ? 'error' : 'success'}">${text}</pre>`;
-    }
-
-    // Диагностические функции
-    runDiagnostic.testConnection = async function() {
-      try {
-        showResult('Проверяем соединение...');
-        const { data, error } = await supabaseClient.from('guests').select('*').limit(1);
-        
-        if (error) {
-          showResult(`Ошибка соединения: ${JSON.stringify(error, null, 2)}`, true);
-        } else {
-          showResult(`✅ Соединение успешно! Данные: ${JSON.stringify(data, null, 2)}`);
+        if (distance < 0) {
+          document.getElementById("days").textContent = "00";
+          document.getElementById("hours").textContent = "00";
+          document.getElementById("minutes").textContent = "00";
+          document.getElementById("seconds").textContent = "00";
+          return;
         }
-      } catch (err) {
-        showResult(`❌ Критическая ошибка: ${err.message}`, true);
-      }
-    };
 
-    runDiagnostic.checkStructure = async function() {
-      try {
-        showResult('Получаем структуру таблицы...');
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("days").textContent = days.toString().padStart(2, "0");
+        document.getElementById("hours").textContent = hours.toString().padStart(2, "0");
+        document.getElementById("minutes").textContent = minutes.toString().padStart(2, "0");
+        document.getElementById("seconds").textContent = seconds.toString().padStart(2, "0");
+      }
+      
+      setInterval(updateTimer, 1000);
+      updateTimer();
+
+      // ================ SUPABASE ================
+      if (typeof supabase === 'undefined') {
+        alert('Ошибка загрузки Supabase. Обновите страницу.');
+        return;
+      }
+
+      const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YnJha2N1a3Boc21xb2R3dXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NjAzMjcsImV4cCI6MjA4ODAzNjMyN30.keBClSxV7XvSh2--XEhWY-VAR8oPR4BmVAuJEaNNizk';
+      
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const form = document.getElementById('rsvp-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const statusMessage = document.getElementById('status-message');
+
+      // ================ ОТПРАВКА ФОРМЫ ================
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        // Пробуем получить одну запись
-        const { data, error } = await supabaseClient
-          .from('guests')
-          .select('*')
-          .limit(1);
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправка...';
+        statusMessage.style.display = 'none';
 
-        if (error) {
-          showResult(`❌ Ошибка: ${JSON.stringify(error, null, 2)}`, true);
-        } else if (data && data.length > 0) {
-          const columns = Object.keys(data[0]);
-          showResult(`✅ Найдены колонки:\n${columns.join('\n')}\n\nПример данных:\n${JSON.stringify(data[0], null, 2)}`);
-        } else {
-          showResult('Таблица пуста. Попробуйте выполнить INSERT тестовых данных.');
-        }
-      } catch (err) {
-        showResult(`❌ Ошибка: ${err.message}`, true);
-      }
-    };
-
-    runDiagnostic.testInsert = async function() {
-      try {
-        showResult('Пробуем вставить тестовые данные...');
-
-        // Тестовые данные
-        const testData = {
-          FIO: "Тестовый Гость",
-          attending: "Да",
-          guests_count: 1
+        // ПРАВИЛЬНЫЕ НАЗВАНИЯ ПОЛЕЙ ИЗ БД
+        const formData = {
+          FIO: document.getElementById('fio').value.trim(),
+          FIOsputnik: document.getElementById('fiosputnik').value.trim() || null,
+          attending: document.getElementById('attending').value,
+          guests_count: parseInt(document.getElementById('guests_count').value) || 1,
+          alcohol: document.getElementById('alcohol').value.trim() || null,
+          alergic: document.getElementById('alergic').value.trim() || null,  // ОДНА "л"!
+          favtrack: document.getElementById('favtrack').value.trim() || null
         };
 
-        const { data, error } = await supabaseClient
-          .from('guests')
-          .insert([testData])
-          .select();
+        console.log('Отправляемые данные:', formData);
 
-        if (error) {
-          let errorMessage = `❌ Ошибка INSERT:\n${JSON.stringify(error, null, 2)}`;
-          
-          if (error.message.includes('column')) {
-            errorMessage += '\n\n⚠️ Проблема с названием колонки. Проверьте точные названия полей в БД.';
-          } else if (error.code === '42501') {
-            errorMessage += '\n\n⚠️ Ошибка доступа (RLS). Создайте политику INSERT в Supabase.';
+        try {
+          const { data, error } = await supabaseClient
+            .from('guests')
+            .insert([formData])
+            .select();
+
+          if (error) {
+            console.error('Ошибка Supabase:', error);
+            
+            statusMessage.style.display = 'block';
+            statusMessage.className = 'error';
+            
+            if (error.code === '42501') {
+              statusMessage.innerHTML = '❌ Ошибка доступа. Создайте политику INSERT в Supabase.';
+            } else {
+              statusMessage.innerHTML = '❌ Ошибка: ' + error.message;
+            }
+            
+          } else {
+            console.log('Успешно отправлено:', data);
+            
+            statusMessage.style.display = 'block';
+            statusMessage.className = 'success';
+            statusMessage.innerHTML = '✅ Спасибо! Ваш ответ отправлен 🎉';
+            
+            form.reset();
+            document.getElementById('guests_count').value = '1';
           }
-          
-          showResult(errorMessage, true);
-        } else {
-          showResult(`✅ Успешный INSERT!\nДанные сохранены:\n${JSON.stringify(data, null, 2)}`);
+        } catch (err) {
+          console.error('Ошибка:', err);
+          statusMessage.style.display = 'block';
+          statusMessage.className = 'error';
+          statusMessage.innerHTML = '❌ Ошибка: ' + err.message;
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Отправить подтверждение';
         }
-      } catch (err) {
-        showResult(`❌ Ошибка: ${err.message}`, true);
-      }
-    };
-
-    // Обработка формы
-    document.getElementById('simple-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const formResult = document.getElementById('form-result');
-      formResult.innerHTML = 'Отправка...';
-      
-      // ВАЖНО: УКАЖИТЕ ТОЧНЫЕ НАЗВАНИЯ ПОЛЕЙ ИЗ ВАШЕЙ БД
-      const formData = {
-        FIO: document.getElementById('fio').value,
-        FIOsputnik: document.getElementById('sputnik').value || null,
-        attending: document.getElementById('attending').value,
-        guests_count: parseInt(document.getElementById('guests').value),
-        alcohol: document.getElementById('alcohol').value || null,
-        // ИЗМЕНИТЕ ЭТО НА ТОЧНОЕ НАЗВАНИЕ ИЗ ВАШЕЙ БД
-        alergic: document.getElementById('allergy').value || null,  // Попробуйте "alergic" с одной "л"
-        favtrack: document.getElementById('track').value || null
-      };
-      
-      console.log('Отправка данных:', formData);
-      
-      try {
-        const { data, error } = await supabaseClient
-          .from('guests')
-          .insert([formData])
-          .select();
-        
-        if (error) {
-          formResult.innerHTML = `<pre class="error">Ошибка: ${error.message}</pre>`;
-          console.error('Детали:', error);
-        } else {
-          formResult.innerHTML = `<pre class="success">✅ Успешно отправлено!\n${JSON.stringify(data, null, 2)}</pre>`;
-        }
-      } catch (err) {
-        formResult.innerHTML = `<pre class="error">Ошибка: ${err.message}</pre>`;
-      }
+      });
     });
   </script>
+
 </body>
 </html>
