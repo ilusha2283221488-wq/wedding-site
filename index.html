@@ -88,34 +88,45 @@
   </div>
 
   <form id="rsvp-form">
-    <input type="text" id="name" placeholder="Ваше имя" required>
-    <input type="text" id="phone" placeholder="Телефон">
+    <!-- Поле для имени (FIO) -->
+    <input type="text" id="fio" placeholder="Ваше ФИО" required>
+    
+    <!-- Поле для имени спутника (FIOsputnik) -->
+    <input type="text" id="fiosputnik" placeholder="ФИО спутника/спутницы">
+    
+    <!-- Поле для телефона (добавили новое поле, так как в БД его нет) -->
+    <input type="text" id="phone" placeholder="Телефон (для связи)">
+    
+    <!-- Придете или нет (attending) -->
     <select id="attending" required>
       <option value="">Вы придёте?</option>
-      <option value="yes">Да, обязательно буду</option>
-      <option value="no">Нет, не смогу прийти</option>
+      <option value="yes">Да, с радостью приду</option>
+      <option value="no">Нет, не смогу присутствовать</option>
     </select>
-    <input type="number" id="guests_count" placeholder="Сколько гостей с вами?" min="0" value="1">
-    <input type="text" id="food_preference" placeholder="Предпочтения по еде (вегетарианец и т.д.)">
+    
+    <!-- Количество гостей (guests_count) -->
+    <input type="number" id="guests_count" placeholder="Количество гостей (включая вас)" min="1" value="1">
+    
+    <!-- Предпочтения по алкоголю (alcohol) -->
     <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю">
-    <textarea id="wishes" placeholder="Ваши пожелания" rows="3"></textarea>
+    
+    <!-- Аллергии/особенности питания (allergic) -->
+    <input type="text" id="allergic" placeholder="Аллергии или особенности питания">
+    
+    <!-- Любимая песня (favtrack) -->
+    <input type="text" id="favtrack" placeholder="Ваша любимая песня (для танцев)">
+    
+    <!-- Пожелания (можно оставить как текст или добавить отдельное поле, но в БД нет wishes, поэтому используем allergic или favtrack) -->
+    <textarea id="wishes" placeholder="Ваши пожелания молодоженам" rows="2"></textarea>
+    
     <button type="submit" id="submit-btn">Отправить RSVP</button>
   </form>
 
   <div id="status-message"></div>
 
-  <!-- Убираем аудио с проблемным URL и добавляем запасной вариант -->
-  <audio id="bg-music" loop preload="none">
-    <source src="https://www.bensound.com/bensound-music/bensound-summer.mp3" type="audio/mpeg">
-    <!-- Запасной вариант с другого источника -->
-    <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/Creative_Commons/Wired_Ant/Demo_Love_Songs/Wired_Ant_-_01_-_Summer_Spirit.mp3" type="audio/mpeg">
-    Ваш браузер не поддерживает аудио.
-  </audio>
-
   <footer>© 2026 Наш свадебный сайт</footer>
 
   <script>
-    // Ждем загрузки всех скриптов
     document.addEventListener('DOMContentLoaded', function() {
       
       // ---------------- Таймер ----------------
@@ -139,20 +150,7 @@
       setInterval(updateTimer, 1000);
       updateTimer();
 
-      // ---------------- Пробуем включить музыку (с обработкой ошибок) ----------------
-      try {
-        const audio = document.getElementById('bg-music');
-        // Пробуем воспроизвести после взаимодействия с пользователем
-        document.addEventListener('click', function playAudioOnce() {
-          audio.play().catch(e => console.log('Автовоспроизведение заблокировано браузером:', e));
-          document.removeEventListener('click', playAudioOnce);
-        }, { once: true });
-      } catch (e) {
-        console.log('Ошибка с аудио:', e);
-      }
-
       // ---------------- Supabase ----------------
-      // Проверяем, что Supabase загружен
       if (typeof supabase === 'undefined') {
         console.error('Supabase не загружен!');
         document.getElementById('status-message').style.display = 'block';
@@ -174,27 +172,37 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Блокируем кнопку отправки
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправка...';
         statusMessage.style.display = 'none';
 
-        // Собираем данные формы
+        // Преобразуем attending в нужный формат (возможно нужно 'yes'/'no' или true/false)
+        const attendingValue = document.getElementById('attending').value;
+        
+        // Подготавливаем данные строго под структуру таблицы
         const formData = {
-          name: document.getElementById('name').value,
-          phone: document.getElementById('phone').value || null,
-          attending: document.getElementById('attending').value,
+          FIO: document.getElementById('fio').value,
+          FIOsputnik: document.getElementById('fiosputnik').value || null,
+          attending: attendingValue,  // или можно преобразовать: attendingValue === 'yes' ? 'Да' : 'Нет'
           guests_count: parseInt(document.getElementById('guests_count').value) || 1,
-          food_preference: document.getElementById('food_preference').value || null,
           alcohol: document.getElementById('alcohol').value || null,
-          wishes: document.getElementById('wishes').value || null
+          allergic: document.getElementById('allergic').value || null,
+          favtrack: document.getElementById('favtrack').value || null
         };
+
+        // Добавляем wishes в allergic или другое поле, так как отдельного поля нет
+        const wishes = document.getElementById('wishes').value;
+        if (wishes && formData.allergic) {
+          formData.allergic = formData.allergic + ' | Пожелания: ' + wishes;
+        } else if (wishes) {
+          formData.allergic = 'Пожелания: ' + wishes;
+        }
 
         console.log('Отправляемые данные:', formData);
 
         try {
           const { data, error } = await supabaseClient
-            .from('guests')  // ИСПОЛЬЗУЕМ МНОЖЕСТВЕННОЕ ЧИСЛО
+            .from('guests')
             .insert([formData]);
 
           if (error) {
@@ -222,34 +230,12 @@
           }
         } catch (err) {
           console.error('Необработанная ошибка:', err);
-          statusMessage.style.display = 'block';
-          statusMessage.style.backgroundColor = '#ffebee';
-          statusMessage.style.color = '#c62828';
-          statusMessage.innerHTML = '❌ Произошла непредвиденная ошибка';
+          statusMessage.innerHTML = '❌ Произошла непредвиденная ошибка: ' + err.message;
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Отправить RSVP';
         }
       });
-
-      // Проверяем соединение с Supabase
-      async function testConnection() {
-        try {
-          const { data, error } = await supabaseClient
-            .from('guests')
-            .select('count', { count: 'exact', head: true });
-          
-          if (error) {
-            console.error('Ошибка соединения с Supabase:', error);
-          } else {
-            console.log('Соединение с Supabase успешно установлено');
-          }
-        } catch (err) {
-          console.error('Не удалось подключиться к Supabase:', err);
-        }
-      }
-      
-      testConnection();
     });
   </script>
 
