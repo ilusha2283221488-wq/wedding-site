@@ -23,8 +23,21 @@
 
     h1 { font-size: 3rem; margin-bottom: 0.5rem; }
     p { font-size: 1.2rem; margin-bottom: 2rem; }
-    .timer { font-size: 2rem; margin-bottom: 2rem; display: flex; gap: 1rem; justify-content: center; }
-    .timer div { background: rgba(255, 255, 255, 0.3); padding: 1rem; border-radius: 10px; min-width: 70px; }
+    .timer { 
+      font-size: 2rem; 
+      margin-bottom: 2rem; 
+      display: flex; 
+      gap: 1rem; 
+      justify-content: center; 
+      flex-wrap: wrap;
+    }
+    .timer div { 
+      background: rgba(255, 255, 255, 0.3); 
+      padding: 1rem; 
+      border-radius: 10px; 
+      min-width: 70px; 
+      backdrop-filter: blur(5px);
+    }
 
     form {
       background: rgba(255, 255, 255, 0.7);
@@ -33,10 +46,11 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      max-width: 400px;
+      max-width: 500px;
       width: 100%;
       margin-bottom: 2rem;
       box-sizing: border-box;
+      backdrop-filter: blur(5px);
     }
 
     input, select, textarea, button {
@@ -46,14 +60,16 @@
       font-size: 1rem;
       width: 100%;
       box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
     }
 
     button {
       background-color: #0288d1;
-      color: #fff;
+      color: white;
       border: none;
       cursor: pointer;
       transition: 0.3s;
+      font-weight: bold;
     }
 
     button:hover { background-color: #026aa7; }
@@ -61,65 +77,64 @@
 
     footer { font-size: 0.9rem; color: #555; margin-top: 2rem; }
 
-    /* Анимации */
-    @keyframes fadeIn { 0% { opacity: 0;} 100% { opacity: 1;} }
-    h1, p, .timer, form { animation: fadeIn 1s ease forwards; }
+    @keyframes fadeIn { 
+      0% { opacity: 0; transform: translateY(20px); } 
+      100% { opacity: 1; transform: translateY(0); } 
+    }
+    
+    h1, p, .timer, form { 
+      animation: fadeIn 1s ease forwards; 
+    }
 
     #status-message {
       margin-top: 1rem;
       padding: 1rem;
       border-radius: 8px;
       display: none;
-      max-width: 400px;
+      max-width: 500px;
       width: 100%;
+      font-weight: bold;
     }
+
+    .success { background-color: #e8f5e8; color: #2e7d32; }
+    .error { background-color: #ffebee; color: #c62828; }
+    .info { background-color: #e3f2fd; color: #01579b; }
   </style>
 </head>
 <body>
 
   <h1>Наша свадьба 💍</h1>
-  <p>Мы рады пригласить вас разделить этот особенный день с нами!</p>
+  <p>Дорогие гости! Мы рады пригласить вас разделить этот особенный день с нами!</p>
 
   <div class="timer">
-    <div><span id="days">00</span> Дн</div>
-    <div><span id="hours">00</span> Ч</div>
-    <div><span id="minutes">00</span> М</div>
-    <div><span id="seconds">00</span> С</div>
+    <div><span id="days">00</span> Дней</div>
+    <div><span id="hours">00</span> Часов</div>
+    <div><span id="minutes">00</span> Минут</div>
+    <div><span id="seconds">00</span> Секунд</div>
   </div>
 
   <form id="rsvp-form">
-    <!-- Поле для имени (FIO) -->
-    <input type="text" id="fio" placeholder="Ваше ФИО" required>
+    <h2 style="margin:0; color:#034078;">Форма подтверждения</h2>
     
-    <!-- Поле для имени спутника (FIOsputnik) -->
-    <input type="text" id="fiosputnik" placeholder="ФИО спутника/спутницы">
+    <input type="text" id="fio" placeholder="Ваше ФИО *" required>
     
-    <!-- Поле для телефона (добавили новое поле, так как в БД его нет) -->
-    <input type="text" id="phone" placeholder="Телефон (для связи)">
+    <input type="text" id="fiosputnik" placeholder="ФИО спутника/спутницы (если идете не один)">
     
-    <!-- Придете или нет (attending) -->
     <select id="attending" required>
-      <option value="">Вы придёте?</option>
-      <option value="yes">Да, с радостью приду</option>
-      <option value="no">Нет, не смогу присутствовать</option>
+      <option value="">Сможете ли вы присутствовать? *</option>
+      <option value="Да">Да, с радостью приду</option>
+      <option value="Нет">Нет, к сожалению не смогу</option>
     </select>
     
-    <!-- Количество гостей (guests_count) -->
-    <input type="number" id="guests_count" placeholder="Количество гостей (включая вас)" min="1" value="1">
+    <input type="number" id="guests_count" placeholder="Количество гостей (включая вас) *" min="1" value="1" required>
     
-    <!-- Предпочтения по алкоголю (alcohol) -->
-    <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю">
+    <input type="text" id="alcohol" placeholder="Ваши предпочтения по алкоголю">
     
-    <!-- Аллергии/особенности питания (allergic) -->
     <input type="text" id="allergic" placeholder="Аллергии или особенности питания">
     
-    <!-- Любимая песня (favtrack) -->
-    <input type="text" id="favtrack" placeholder="Ваша любимая песня (для танцев)">
+    <input type="text" id="favtrack" placeholder="Ваша любимая песня (для музыкального оформления)">
     
-    <!-- Пожелания (можно оставить как текст или добавить отдельное поле, но в БД нет wishes, поэтому используем allergic или favtrack) -->
-    <textarea id="wishes" placeholder="Ваши пожелания молодоженам" rows="2"></textarea>
-    
-    <button type="submit" id="submit-btn">Отправить RSVP</button>
+    <button type="submit" id="submit-btn">Отправить подтверждение</button>
   </form>
 
   <div id="status-message"></div>
@@ -129,12 +144,20 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       
-      // ---------------- Таймер ----------------
+      // ================ ТАЙМЕР ================
       const weddingDate = new Date("2026-08-20T14:00:00").getTime();
       
       function updateTimer() {
         const now = new Date().getTime();
         const distance = weddingDate - now;
+
+        if (distance < 0) {
+          document.getElementById("days").textContent = "00";
+          document.getElementById("hours").textContent = "00";
+          document.getElementById("minutes").textContent = "00";
+          document.getElementById("seconds").textContent = "00";
+          return;
+        }
 
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -150,92 +173,125 @@
       setInterval(updateTimer, 1000);
       updateTimer();
 
-      // ---------------- Supabase ----------------
+      // ================ SUPABASE ================
+      // Проверяем загрузку Supabase
       if (typeof supabase === 'undefined') {
-        console.error('Supabase не загружен!');
-        document.getElementById('status-message').style.display = 'block';
-        document.getElementById('status-message').style.backgroundColor = '#ffebee';
-        document.getElementById('status-message').style.color = '#c62828';
-        document.getElementById('status-message').innerHTML = '❌ Ошибка загрузки Supabase. Обновите страницу.';
+        showMessage('Ошибка загрузки Supabase. Обновите страницу.', 'error');
         return;
       }
 
+      // Инициализация Supabase
       const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YnJha2N1a3Boc21xb2R3dXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NjAzMjcsImV4cCI6MjA4ODAzNjMyN30.keBClSxV7XvSh2--XEhWY-VAR8oPR4BmVAuJEaNNizk';
       
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+      // Получаем элементы формы
       const form = document.getElementById('rsvp-form');
       const submitBtn = document.getElementById('submit-btn');
       const statusMessage = document.getElementById('status-message');
 
+      // Функция для показа сообщений
+      function showMessage(text, type = 'info') {
+        statusMessage.style.display = 'block';
+        statusMessage.className = type;
+        statusMessage.textContent = text;
+      }
+
+      // ================ ОТПРАВКА ФОРМЫ ================
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // Блокируем кнопку
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправка...';
         statusMessage.style.display = 'none';
 
-        // Преобразуем attending в нужный формат (возможно нужно 'yes'/'no' или true/false)
-        const attendingValue = document.getElementById('attending').value;
-        
-        // Подготавливаем данные строго под структуру таблицы
+        // Собираем данные из формы
         const formData = {
-          FIO: document.getElementById('fio').value,
-          FIOsputnik: document.getElementById('fiosputnik').value || null,
-          attending: attendingValue,  // или можно преобразовать: attendingValue === 'yes' ? 'Да' : 'Нет'
+          FIO: document.getElementById('fio').value.trim(),
+          FIOsputnik: document.getElementById('fiosputnik').value.trim() || null,
+          attending: document.getElementById('attending').value,
           guests_count: parseInt(document.getElementById('guests_count').value) || 1,
-          alcohol: document.getElementById('alcohol').value || null,
-          allergic: document.getElementById('allergic').value || null,
-          favtrack: document.getElementById('favtrack').value || null
+          alcohol: document.getElementById('alcohol').value.trim() || null,
+          allergic: document.getElementById('allergic').value.trim() || null,
+          favtrack: document.getElementById('favtrack').value.trim() || null
         };
-
-        // Добавляем wishes в allergic или другое поле, так как отдельного поля нет
-        const wishes = document.getElementById('wishes').value;
-        if (wishes && formData.allergic) {
-          formData.allergic = formData.allergic + ' | Пожелания: ' + wishes;
-        } else if (wishes) {
-          formData.allergic = 'Пожелания: ' + wishes;
-        }
 
         console.log('Отправляемые данные:', formData);
 
         try {
+          // Отправляем в Supabase
           const { data, error } = await supabaseClient
             .from('guests')
-            .insert([formData]);
+            .insert([formData])
+            .select();
 
           if (error) {
             console.error('Ошибка Supabase:', error);
             
-            statusMessage.style.display = 'block';
-            statusMessage.style.backgroundColor = '#ffebee';
-            statusMessage.style.color = '#c62828';
-            statusMessage.innerHTML = `
-              <strong>❌ Ошибка:</strong> ${error.message}<br>
-              <small>Проверьте консоль (F12) для деталей</small>
-            `;
+            // Понятное сообщение об ошибке
+            let errorMessage = 'Ошибка при отправке: ';
+            if (error.message.includes('duplicate')) {
+              errorMessage = 'Вы уже отправляли заявку!';
+            } else if (error.message.includes('violates')) {
+              errorMessage = 'Проверьте правильность заполнения полей';
+            } else {
+              errorMessage += error.message;
+            }
             
-            alert('Ошибка при отправке: ' + error.message);
+            showMessage(errorMessage, 'error');
+            
+            // Детали в консоль
+            console.error('Детали ошибки:', {
+              code: error.code,
+              message: error.message,
+              details: error.details
+            });
+            
           } else {
             console.log('Успешно отправлено:', data);
             
-            statusMessage.style.display = 'block';
-            statusMessage.style.backgroundColor = '#e8f5e8';
-            statusMessage.style.color = '#2e7d32';
-            statusMessage.innerHTML = '✅ Спасибо! Ваш ответ отправлен 🎉';
+            // Показываем успех
+            showMessage('✅ Спасибо! Ваш ответ отправлен 🎉', 'success');
             
-            alert('Спасибо! Ваш ответ отправлен 🎉');
+            // Очищаем форму
             form.reset();
+            
+            // Устанавливаем значения по умолчанию
+            document.getElementById('guests_count').value = '1';
           }
         } catch (err) {
           console.error('Необработанная ошибка:', err);
-          statusMessage.innerHTML = '❌ Произошла непредвиденная ошибка: ' + err.message;
+          showMessage('Произошла ошибка при отправке. Попробуйте позже.', 'error');
         } finally {
+          // Разблокируем кнопку
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Отправить RSVP';
+          submitBtn.textContent = 'Отправить подтверждение';
         }
       });
+
+      // ================ ПРОВЕРКА СОЕДИНЕНИЯ ================
+      async function testConnection() {
+        try {
+          const { data, error } = await supabaseClient
+            .from('guests')
+            .select('count', { count: 'exact', head: true });
+          
+          if (error) {
+            console.error('Ошибка соединения с Supabase:', error);
+            showMessage('Проблема с соединением к базе данных', 'error');
+          } else {
+            console.log('✅ Соединение с Supabase успешно');
+          }
+        } catch (err) {
+          console.error('Не удалось подключиться к Supabase:', err);
+        }
+      }
+      
+      // Проверяем соединение при загрузке
+      testConnection();
+
     });
   </script>
 
