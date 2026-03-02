@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Наш свадебный день 💍</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -14,78 +15,55 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       min-height: 100vh;
       text-align: center;
-      overflow: hidden;
+      padding: 2rem;
     }
 
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 0.5rem;
-      animation: fadeInDown 1s ease forwards;
-    }
+    h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+    p { font-size: 1.2rem; margin-bottom: 2rem; }
+    .timer { font-size: 2rem; margin-bottom: 2rem; display: flex; gap: 1rem; justify-content: center; }
+    .timer div { background: rgba(255, 255, 255, 0.3); padding: 1rem; border-radius: 10px; min-width: 70px; }
 
-    p {
-      font-size: 1.2rem;
+    form {
+      background: rgba(255, 255, 255, 0.7);
+      padding: 2rem;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+      width: 100%;
       margin-bottom: 2rem;
-      animation: fadeIn 2s ease forwards;
     }
 
-    .rsvp-button {
-      padding: 1rem 2rem;
-      font-size: 1.2rem;
+    input, select, textarea, button {
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      width: 100%;
+    }
+
+    button {
       background-color: #0288d1;
       color: #fff;
       border: none;
-      border-radius: 10px;
       cursor: pointer;
       transition: 0.3s;
-      animation: fadeInUp 2.5s ease forwards;
     }
 
-    .rsvp-button:hover {
-      background-color: #026aa7;
-    }
+    button:hover { background-color: #026aa7; }
 
-    .timer {
-      font-size: 2rem;
-      margin-bottom: 2rem;
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      animation: fadeIn 2s ease forwards;
-    }
-
-    .timer div {
-      background: rgba(255, 255, 255, 0.3);
-      padding: 1rem;
-      border-radius: 10px;
-      min-width: 70px;
-    }
-
-    footer {
-      position: absolute;
-      bottom: 20px;
-      font-size: 0.9rem;
-      color: #555;
-    }
+    footer { font-size: 0.9rem; color: #555; margin-top: 2rem; }
 
     /* Анимации */
-    @keyframes fadeInDown {
-      0% { opacity: 0; transform: translateY(-50px);}
-      100% { opacity: 1; transform: translateY(0);}
-    }
+    @keyframes fadeInDown { 0% { opacity: 0; transform: translateY(-50px);} 100% { opacity: 1; transform: translateY(0);} }
+    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(50px);} 100% { opacity: 1; transform: translateY(0);} }
+    @keyframes fadeIn { 0% { opacity: 0;} 100% { opacity: 1;} }
 
-    @keyframes fadeInUp {
-      0% { opacity: 0; transform: translateY(50px);}
-      100% { opacity: 1; transform: translateY(0);}
-    }
-
-    @keyframes fadeIn {
-      0% { opacity: 0;}
-      100% { opacity: 1;}
-    }
+    h1, p, .timer, form { animation: fadeIn 1s ease forwards; }
   </style>
 </head>
 <body>
@@ -100,7 +78,20 @@
     <div><span id="seconds">00</span> С</div>
   </div>
 
-  <button class="rsvp-button" onclick="alert('Форма RSVP скоро будет доступна 🎉')">Подтвердить участие</button>
+  <form id="rsvp-form">
+    <input type="text" id="name" placeholder="Ваше имя" required>
+    <input type="text" id="phone" placeholder="Телефон">
+    <select id="attending">
+      <option value="">Вы придёте?</option>
+      <option value="yes">Да</option>
+      <option value="no">Нет</option>
+    </select>
+    <input type="number" id="guests_count" placeholder="Сколько гостей с вами?" min="0">
+    <input type="text" id="food_preference" placeholder="Предпочтения по еде">
+    <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю">
+    <textarea id="wishes" placeholder="Ваши пожелания"></textarea>
+    <button type="submit">Отправить RSVP</button>
+  </form>
 
   <audio autoplay loop>
     <source src="https://www.bensound.com/bensound-music/bensound-summer.mp3" type="audio/mpeg">
@@ -109,28 +100,58 @@
 
   <footer>© 2026 Наш свадебный сайт</footer>
 
- <script>
-  // Таймер
-  const weddingDate = new Date("2026-08-20T14:00:00").getTime();
+  <script>
+    // ---------------- Таймер ----------------
+    const weddingDate = new Date("2026-08-20T14:00:00").getTime();
+    function updateTimer() {
+      const now = new Date().getTime();
+      const distance = weddingDate - now;
 
-  function updateTimer() {
-    const now = new Date().getTime();
-    const distance = weddingDate - now;
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      document.getElementById("days").textContent = days.toString().padStart(2, "0");
+      document.getElementById("hours").textContent = hours.toString().padStart(2, "0");
+      document.getElementById("minutes").textContent = minutes.toString().padStart(2, "0");
+      document.getElementById("seconds").textContent = seconds.toString().padStart(2, "0");
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
 
-    document.getElementById("days").textContent = days.toString().padStart(2, "0");
-    document.getElementById("hours").textContent = hours.toString().padStart(2, "0");
-    document.getElementById("minutes").textContent = minutes.toString().padStart(2, "0");
-    document.getElementById("seconds").textContent = seconds.toString().padStart(2, "0");
-  }
+    // ---------------- Supabase ----------------
+    // Вставь свои данные проекта
+    const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable__c_QzIP32YTSx32ZVrKc5Q_6LK55M8z';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  setInterval(updateTimer, 1000);
-  updateTimer();
-</script>
+    const form = document.getElementById('rsvp-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const { data, error } = await supabase
+        .from('guests')
+        .insert([
+          {
+            name: document.getElementById('name').value,
+            phone: document.getElementById('phone').value,
+            attending: document.getElementById('attending').value,
+            guests_count: document.getElementById('guests_count').value,
+            food_preference: document.getElementById('food_preference').value,
+            alcohol: document.getElementById('alcohol').value,
+            wishes: document.getElementById('wishes').value
+          }
+        ]);
+
+      if (error) {
+        alert('Ошибка при отправке: ' + error.message);
+      } else {
+        alert('Спасибо! Ваш ответ отправлен 🎉');
+        form.reset();
+      }
+    });
+  </script>
 
 </body>
 </html>
