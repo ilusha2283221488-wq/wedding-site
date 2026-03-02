@@ -44,6 +44,7 @@
       border: 1px solid #ccc;
       font-size: 1rem;
       width: 100%;
+      box-sizing: border-box;
     }
 
     button {
@@ -55,14 +56,12 @@
     }
 
     button:hover { background-color: #026aa7; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
 
     footer { font-size: 0.9rem; color: #555; margin-top: 2rem; }
 
     /* Анимации */
-    @keyframes fadeInDown { 0% { opacity: 0; transform: translateY(-50px);} 100% { opacity: 1; transform: translateY(0);} }
-    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(50px);} 100% { opacity: 1; transform: translateY(0);} }
     @keyframes fadeIn { 0% { opacity: 0;} 100% { opacity: 1;} }
-
     h1, p, .timer, form { animation: fadeIn 1s ease forwards; }
   </style>
 </head>
@@ -81,17 +80,19 @@
   <form id="rsvp-form">
     <input type="text" id="name" placeholder="Ваше имя" required>
     <input type="text" id="phone" placeholder="Телефон">
-    <select id="attending">
+    <select id="attending" required>
       <option value="">Вы придёте?</option>
       <option value="yes">Да</option>
       <option value="no">Нет</option>
     </select>
-    <input type="number" id="guests_count" placeholder="Сколько гостей с вами?" min="0">
+    <input type="number" id="guests_count" placeholder="Сколько гостей с вами?" min="0" value="0">
     <input type="text" id="food_preference" placeholder="Предпочтения по еде">
     <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю">
     <textarea id="wishes" placeholder="Ваши пожелания"></textarea>
-    <button type="submit">Отправить RSVP</button>
+    <button type="submit" id="submit-btn">Отправить RSVP</button>
   </form>
+
+  <div id="status-message" style="margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none;"></div>
 
   <audio autoplay loop>
     <source src="https://www.bensound.com/bensound-music/bensound-summer.mp3" type="audio/mpeg">
@@ -121,36 +122,104 @@
     updateTimer();
 
     // ---------------- Supabase ----------------
-    // Вставь свои данные проекта
     const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YnJha2N1a3Boc21xb2R3dXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NjAzMjcsImV4cCI6MjA4ODAzNjMyN30.keBClSxV7XvSh2--XEhWY-VAR8oPR4BmVAuJEaNNizk';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Проверяем, что Supabase загружен
+    if (typeof supabase === 'undefined') {
+      console.error('Supabase не загружен!');
+      document.getElementById('status-message').style.display = 'block';
+      document.getElementById('status-message').innerHTML = '❌ Ошибка загрузки Supabase';
+    }
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const form = document.getElementById('rsvp-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const statusMessage = document.getElementById('status-message');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      // Блокируем кнопку отправки
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка...';
+      statusMessage.style.display = 'none';
 
-      const { data, error } = await supabase
-        .from('guests')
-        .insert([
-          {
-            name: document.getElementById('name').value,
-            phone: document.getElementById('phone').value,
-            attending: document.getElementById('attending').value,
-            guests_count: document.getElementById('guests_count').value,
-            food_preference: document.getElementById('food_preference').value,
-            alcohol: document.getElementById('alcohol').value,
-            wishes: document.getElementById('wishes').value
-          }
-        ]);
+      // Собираем данные формы
+      const formData = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value || null,
+        attending: document.getElementById('attending').value,
+        guests_count: parseInt(document.getElementById('guests_count').value) || 0,
+        food_preference: document.getElementById('food_preference').value || null,
+        alcohol: document.getElementById('alcohol').value || null,
+        wishes: document.getElementById('wishes').value || null
+      };
 
-      if (error) {
-        alert('Ошибка при отправке: ' + error.message);
-      } else {
-        alert('Спасибо! Ваш ответ отправлен 🎉');
-        form.reset();
+      console.log('Отправляемые данные:', formData);
+
+      try {
+        // Пробуем вставить данные
+        const { data, error } = await supabaseClient
+          .from('guests')  // Используем множественное число
+          .insert([formData]);
+
+        if (error) {
+          console.error('Ошибка Supabase:', error);
+          
+          // Показываем детальную ошибку
+          statusMessage.style.display = 'block';
+          statusMessage.style.backgroundColor = '#ffebee';
+          statusMessage.style.color = '#c62828';
+          statusMessage.innerHTML = `
+            <strong>❌ Ошибка:</strong> ${error.message}<br>
+            <small>Проверьте консоль (F12) для деталей</small>
+          `;
+          
+          alert('Ошибка при отправке: ' + error.message);
+        } else {
+          console.log('Успешно отправлено:', data);
+          
+          statusMessage.style.display = 'block';
+          statusMessage.style.backgroundColor = '#e8f5e8';
+          statusMessage.style.color = '#2e7d32';
+          statusMessage.innerHTML = '✅ Спасибо! Ваш ответ отправлен 🎉';
+          
+          alert('Спасибо! Ваш ответ отправлен 🎉');
+          form.reset();
+        }
+      } catch (err) {
+        console.error('Необработанная ошибка:', err);
+        statusMessage.style.display = 'block';
+        statusMessage.style.backgroundColor = '#ffebee';
+        statusMessage.style.color = '#c62828';
+        statusMessage.innerHTML = '❌ Произошла непредвиденная ошибка';
+      } finally {
+        // Разблокируем кнопку
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Отправить RSVP';
       }
     });
+
+    // Проверяем соединение с Supabase
+    async function testConnection() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('guests')
+          .select('count', { count: 'exact', head: true });
+        
+        if (error) {
+          console.error('Ошибка соединения с Supabase:', error);
+        } else {
+          console.log('Соединение с Supabase успешно установлено');
+        }
+      } catch (err) {
+        console.error('Не удалось подключиться к Supabase:', err);
+      }
+    }
+    
+    testConnection();
   </script>
 
 </body>
