@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Наш свадебный день 💍</title>
+  <title>Диагностика Supabase</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
       padding: 20px;
       text-align: center;
@@ -26,14 +26,29 @@
       padding: 10px;
       border-radius: 5px;
       overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
     button {
       padding: 10px 20px;
       margin: 5px;
       cursor: pointer;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
     }
-    .success { color: green; }
-    .error { color: red; }
+    button:hover {
+      background: #45a049;
+    }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    input, select {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
@@ -41,162 +56,155 @@
   
   <div class="diagnostic">
     <h3>Проверка подключения:</h3>
-    <button onclick="testConnection()">1. Проверить соединение</button>
-    <button onclick="checkStructure()">2. Проверить структуру таблицы</button>
-    <button onclick="testInsert()">3. Тестовый INSERT</button>
+    <button onclick="runDiagnostic.testConnection()">1. Проверить соединение</button>
+    <button onclick="runDiagnostic.checkStructure()">2. Проверить структуру таблицы</button>
+    <button onclick="runDiagnostic.testInsert()">3. Тестовый INSERT</button>
   </div>
 
   <div id="result"></div>
-
-  <script>
-    const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YnJha2N1a3Boc21xb2R3dXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NjAzMjcsImV4cCI6MjA4ODAzNjMyN30.keBClSxV7XvSh2--XEhWY-VAR8oPR4BmVAuJEaNNizk';
-    
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const resultDiv = document.getElementById('result');
-
-    function showResult(text, isError = false) {
-      resultDiv.innerHTML = `<pre class="${isError ? 'error' : 'success'}">${text}</pre>`;
-    }
-
-    async function testConnection() {
-      try {
-        showResult('Проверяем соединение...');
-        const { data, error } = await supabase.from('guests').select('*').limit(1);
-        
-        if (error) {
-          showResult(`Ошибка соединения: ${JSON.stringify(error, null, 2)}`, true);
-        } else {
-          showResult(`Соединение успешно! Данные: ${JSON.stringify(data, null, 2)}`);
-        }
-      } catch (err) {
-        showResult(`Критическая ошибка: ${err.message}`, true);
-      }
-    }
-
-    async function checkStructure() {
-      try {
-        showResult('Получаем структуру таблицы...');
-        
-        // Пробуем получить структуру через head запрос
-        const { data, error } = await supabase
-          .from('guests')
-          .select('*')
-          .limit(0);
-
-        if (error) {
-          showResult(`Ошибка получения структуры: ${JSON.stringify(error, null, 2)}`, true);
-          return;
-        }
-
-        // Если не получили структуру, пробуем другой метод
-        const { data: sample, error: sampleError } = await supabase
-          .from('guests')
-          .select('*')
-          .limit(1);
-
-        if (sampleError) {
-          showResult(`Не удалось получить данные: ${JSON.stringify(sampleError, null, 2)}`, true);
-        } else if (sample && sample.length > 0) {
-          const columns = Object.keys(sample[0]);
-          showResult(`✅ Найдены колонки:\n${columns.join('\n')}\n\nПример данных:\n${JSON.stringify(sample[0], null, 2)}`);
-        } else {
-          showResult('Таблица пуста. Попробуйте выполнить INSERT тестовых данных.');
-        }
-      } catch (err) {
-        showResult(`Ошибка: ${err.message}`, true);
-      }
-    }
-
-    async function testInsert() {
-      try {
-        showResult('Пробуем вставить тестовые данные...');
-
-        // Тестовые данные с минимальным набором полей
-        const testData = {
-          FIO: "Тестовый Гость",
-          attending: "Да",
-          guests_count: 1
-        };
-
-        const { data, error } = await supabase
-          .from('guests')
-          .insert([testData])
-          .select();
-
-        if (error) {
-          showResult(`❌ Ошибка INSERT:\n${JSON.stringify(error, null, 2)}`, true);
-          
-          // Анализируем ошибку
-          if (error.message.includes('column')) {
-            showResult(`Проблема с колонкой. Проверьте названия полей в БД.\n\nОшибка: ${error.message}`, true);
-          } else if (error.code === '42501') {
-            showResult(`Ошибка доступа (RLS). Нужно создать политику INSERT в Supabase.`, true);
-          }
-        } else {
-          showResult(`✅ Успешный INSERT!\nДанные сохранены:\n${JSON.stringify(data, null, 2)}`);
-        }
-      } catch (err) {
-        showResult(`Ошибка: ${err.message}`, true);
-      }
-    }
-  </script>
 
   <hr>
 
   <h2>Рабочая форма</h2>
   <form id="simple-form">
-    <input type="text" id="fio" placeholder="ФИО" required><br><br>
-    <input type="text" id="sputnik" placeholder="ФИО спутника"><br><br>
+    <input type="text" id="fio" placeholder="ФИО *" required><br>
+    <input type="text" id="sputnik" placeholder="ФИО спутника"><br>
     <select id="attending" required>
-      <option value="">Придете?</option>
+      <option value="">Придете? *</option>
       <option value="Да">Да</option>
       <option value="Нет">Нет</option>
-    </select><br><br>
-    <input type="number" id="guests" value="1" min="1"><br><br>
-    <input type="text" id="alcohol" placeholder="Алкоголь"><br><br>
-    <input type="text" id="allergy" placeholder="Аллергии"><br><br>
-    <input type="text" id="track" placeholder="Любимый трек"><br><br>
+    </select><br>
+    <input type="number" id="guests" placeholder="Количество гостей" value="1" min="1"><br>
+    <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю"><br>
+    <input type="text" id="allergy" placeholder="Аллергии"><br>
+    <input type="text" id="track" placeholder="Любимый трек"><br>
     <button type="submit">Отправить</button>
   </form>
 
   <div id="form-result"></div>
 
   <script>
-    // Простая форма с правильными названиями
+    // Создаем глобальный объект для диагностики
+    window.runDiagnostic = {};
+    
+    const SUPABASE_URL = 'https://rtbrakcukphsmqodwuvg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YnJha2N1a3Boc21xb2R3dXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0NjAzMjcsImV4cCI6MjA4ODAzNjMyN30.keBClSxV7XvSh2--XEhWY-VAR8oPR4BmVAuJEaNNizk';
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const resultDiv = document.getElementById('result');
+
+    function showResult(text, isError = false) {
+      resultDiv.innerHTML = `<pre class="${isError ? 'error' : 'success'}">${text}</pre>`;
+    }
+
+    // Диагностические функции
+    runDiagnostic.testConnection = async function() {
+      try {
+        showResult('Проверяем соединение...');
+        const { data, error } = await supabaseClient.from('guests').select('*').limit(1);
+        
+        if (error) {
+          showResult(`Ошибка соединения: ${JSON.stringify(error, null, 2)}`, true);
+        } else {
+          showResult(`✅ Соединение успешно! Данные: ${JSON.stringify(data, null, 2)}`);
+        }
+      } catch (err) {
+        showResult(`❌ Критическая ошибка: ${err.message}`, true);
+      }
+    };
+
+    runDiagnostic.checkStructure = async function() {
+      try {
+        showResult('Получаем структуру таблицы...');
+        
+        // Пробуем получить одну запись
+        const { data, error } = await supabaseClient
+          .from('guests')
+          .select('*')
+          .limit(1);
+
+        if (error) {
+          showResult(`❌ Ошибка: ${JSON.stringify(error, null, 2)}`, true);
+        } else if (data && data.length > 0) {
+          const columns = Object.keys(data[0]);
+          showResult(`✅ Найдены колонки:\n${columns.join('\n')}\n\nПример данных:\n${JSON.stringify(data[0], null, 2)}`);
+        } else {
+          showResult('Таблица пуста. Попробуйте выполнить INSERT тестовых данных.');
+        }
+      } catch (err) {
+        showResult(`❌ Ошибка: ${err.message}`, true);
+      }
+    };
+
+    runDiagnostic.testInsert = async function() {
+      try {
+        showResult('Пробуем вставить тестовые данные...');
+
+        // Тестовые данные
+        const testData = {
+          FIO: "Тестовый Гость",
+          attending: "Да",
+          guests_count: 1
+        };
+
+        const { data, error } = await supabaseClient
+          .from('guests')
+          .insert([testData])
+          .select();
+
+        if (error) {
+          let errorMessage = `❌ Ошибка INSERT:\n${JSON.stringify(error, null, 2)}`;
+          
+          if (error.message.includes('column')) {
+            errorMessage += '\n\n⚠️ Проблема с названием колонки. Проверьте точные названия полей в БД.';
+          } else if (error.code === '42501') {
+            errorMessage += '\n\n⚠️ Ошибка доступа (RLS). Создайте политику INSERT в Supabase.';
+          }
+          
+          showResult(errorMessage, true);
+        } else {
+          showResult(`✅ Успешный INSERT!\nДанные сохранены:\n${JSON.stringify(data, null, 2)}`);
+        }
+      } catch (err) {
+        showResult(`❌ Ошибка: ${err.message}`, true);
+      }
+    };
+
+    // Обработка формы
     document.getElementById('simple-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const formResult = document.getElementById('form-result');
       formResult.innerHTML = 'Отправка...';
       
-      // Определите ТОЧНЫЕ названия колонок из вашей БД
+      // ВАЖНО: УКАЖИТЕ ТОЧНЫЕ НАЗВАНИЯ ПОЛЕЙ ИЗ ВАШЕЙ БД
       const formData = {
         FIO: document.getElementById('fio').value,
         FIOsputnik: document.getElementById('sputnik').value || null,
         attending: document.getElementById('attending').value,
         guests_count: parseInt(document.getElementById('guests').value),
         alcohol: document.getElementById('alcohol').value || null,
-        // ВАЖНО: замените "allergic" на точное название из вашей БД
-        allergic: document.getElementById('allergy').value || null,  // ← ИЗМЕНИТЕ ЭТО
+        // ИЗМЕНИТЕ ЭТО НА ТОЧНОЕ НАЗВАНИЕ ИЗ ВАШЕЙ БД
+        alergic: document.getElementById('allergy').value || null,  // Попробуйте "alergic" с одной "л"
         favtrack: document.getElementById('track').value || null
       };
       
       console.log('Отправка данных:', formData);
       
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('guests')
-          .insert([formData]);
+          .insert([formData])
+          .select();
         
         if (error) {
-          formResult.innerHTML = `Ошибка: ${error.message}`;
+          formResult.innerHTML = `<pre class="error">Ошибка: ${error.message}</pre>`;
           console.error('Детали:', error);
         } else {
-          formResult.innerHTML = 'Успешно отправлено!';
+          formResult.innerHTML = `<pre class="success">✅ Успешно отправлено!\n${JSON.stringify(data, null, 2)}</pre>`;
         }
       } catch (err) {
-        formResult.innerHTML = `Ошибка: ${err.message}`;
+        formResult.innerHTML = `<pre class="error">Ошибка: ${err.message}</pre>`;
       }
     });
   </script>
