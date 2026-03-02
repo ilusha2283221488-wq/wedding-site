@@ -118,7 +118,6 @@
   <form id="rsvp-form">
     <h2 style="margin:0; color:#034078;">Форма подтверждения</h2>
     
-    <!-- Основные поля -->
     <input type="text" id="fio" placeholder="Ваше ФИО *" required>
     <input type="text" id="fiosputnik" placeholder="ФИО спутника/спутницы">
     
@@ -130,10 +129,7 @@
     
     <input type="number" id="guests_count" placeholder="Количество гостей (включая вас) *" min="1" value="1" required>
     <input type="text" id="alcohol" placeholder="Предпочтения по алкоголю">
-    
-    <!-- ВАЖНО: id="alergic" с одной "л" как в базе данных -->
     <input type="text" id="alergic" placeholder="Аллергии или особенности питания">
-    
     <input type="text" id="favtrack" placeholder="Любимая песня">
     
     <button type="submit" id="submit-btn">Отправить подтверждение</button>
@@ -146,7 +142,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       
-      // ================ ТАЙМЕР ================
+      // ТАЙМЕР
       const weddingDate = new Date("2026-08-20T14:00:00").getTime();
       
       function updateTimer() {
@@ -175,9 +171,9 @@
       setInterval(updateTimer, 1000);
       updateTimer();
 
-      // ================ SUPABASE ================
+      // SUPABASE
       if (typeof supabase === 'undefined') {
-        showMessage('Ошибка загрузки Supabase. Обновите страницу.', 'error');
+        alert('Ошибка: Supabase не загружен');
         return;
       }
 
@@ -190,13 +186,7 @@
       const submitBtn = document.getElementById('submit-btn');
       const statusMessage = document.getElementById('status-message');
 
-      function showMessage(text, type = 'info') {
-        statusMessage.style.display = 'block';
-        statusMessage.className = type;
-        statusMessage.textContent = text;
-      }
-
-      // ================ ОТПРАВКА ФОРМЫ ================
+      // Отправка формы
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -204,18 +194,18 @@
         submitBtn.textContent = 'Отправка...';
         statusMessage.style.display = 'none';
 
-        // ВАЖНО: правильные названия полей как в БД
+        // ВАЖНО: ТОЧНЫЕ НАЗВАНИЯ ПОЛЕЙ ИЗ БАЗЫ ДАННЫХ
         const formData = {
           FIO: document.getElementById('fio').value.trim(),
           FIOsputnik: document.getElementById('fiosputnik').value.trim() || null,
           attending: document.getElementById('attending').value,
           guests_count: parseInt(document.getElementById('guests_count').value) || 1,
           alcohol: document.getElementById('alcohol').value.trim() || null,
-          alergic: document.getElementById('alergic').value.trim() || null,  // с одной "л"!
+          alergic: document.getElementById('alergic').value.trim() || null,  // ОДНА "л"!
           favtrack: document.getElementById('favtrack').value.trim() || null
         };
 
-        console.log('Отправляемые данные:', formData);
+        console.log('Отправляемые данные (проверьте название alergic - одна "л"):', formData);
 
         try {
           const { data, error } = await supabaseClient
@@ -224,57 +214,34 @@
             .select();
 
           if (error) {
-            console.error('Ошибка Supabase:', error);
+            console.error('Детали ошибки:', error);
             
-            let errorMessage = 'Ошибка при отправке: ';
-            
-            if (error.code === '42501') {
-              errorMessage = '⚠️ Ошибка доступа. Нужно настроить политики в Supabase.\n';
-              errorMessage += '1. Authentication → Policies\n';
-              errorMessage += '2. Добавить политику INSERT для таблицы guests';
-            } else {
-              errorMessage += error.message;
-            }
-            
-            showMessage(errorMessage, 'error');
-            
+            statusMessage.style.display = 'block';
+            statusMessage.className = 'error';
+            statusMessage.innerHTML = `
+              <strong>❌ Ошибка:</strong> ${error.message}<br>
+              <strong>Код:</strong> ${error.code || 'Нет'}<br>
+              <strong>Поле:</strong> alergic (проверьте название в БД)
+            `;
           } else {
-            console.log('Успешно отправлено:', data);
-            showMessage('✅ Спасибо! Ваш ответ отправлен 🎉', 'success');
+            console.log('Успех:', data);
+            statusMessage.style.display = 'block';
+            statusMessage.className = 'success';
+            statusMessage.innerHTML = '✅ Спасибо! Ваш ответ отправлен 🎉';
             
-            // Очищаем форму
             form.reset();
             document.getElementById('guests_count').value = '1';
           }
         } catch (err) {
-          console.error('Необработанная ошибка:', err);
-          showMessage('Произошла ошибка при отправке. Попробуйте позже.', 'error');
+          console.error('Ошибка:', err);
+          statusMessage.style.display = 'block';
+          statusMessage.className = 'error';
+          statusMessage.innerHTML = 'Ошибка: ' + err.message;
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Отправить подтверждение';
         }
       });
-
-      // ================ ПРОВЕРКА ПОЛИТИК ================
-      async function checkPolicies() {
-        try {
-          // Пробуем прочитать данные чтобы проверить доступ
-          const { data, error } = await supabaseClient
-            .from('guests')
-            .select('count', { count: 'exact', head: true });
-          
-          if (error) {
-            console.log('Нет прав на чтение, но это нормально для анонимного пользователя');
-          } else {
-            console.log('✅ Есть доступ на чтение');
-          }
-        } catch (err) {
-          console.log('Ошибка при проверке:', err);
-        }
-      }
-      
-      checkPolicies();
-
     });
   </script>
 
